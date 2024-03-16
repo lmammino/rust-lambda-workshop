@@ -21,7 +21,13 @@ Material to host a workshop on how to build and deploy Rust Lambda functions wit
 - Zig ([https://ziglang.org/](https://ziglang.org/))
 - Cargo Lambda ([https://www.cargo-lambda.info/](https://www.cargo-lambda.info/))
 
+### Verify your setup
+
 ```bash
+# Docker
+docker version
+# (...)
+
 # Rust
 cargo --version
 # -> cargo 1.76.0 (c84b36747 2024-01-18)
@@ -58,7 +64,7 @@ sam --version
 ## Scaffolding
 
 ```bash
-cargo lambda new ping-it
+cargo lambda new itsalive
 ```
 
 - Not an HTTP function
