@@ -1,0 +1,60 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+
+# # Global configuration that is applied by default to specific resources
+# Globals:
+
+# # define what's configurable in our stack
+# Parameters:
+  
+# list all our resources (e.g. lambdas, s3 buckets, etc)
+Resources:
+  
+  HealthCheckLambda:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: rust-cargolambda
+    Properties:
+      CodeUri: .
+      Handler: bootstrap
+      Runtime: provided.al2023
+      MemorySize: 256
+      Timeout: 70
+      Architectures:
+        - arm64
+      Environment:
+        Variables:
+          URL: 'https://loige.com'
+          TIMEOUT: 10
+          TABLE_NAME: !Ref HealthChecksTable
+      Events:
+        ScheduledExecution:
+          Type: Schedule
+          Properties:
+            Schedule: rate(30 minutes)
+            Enabled: false
+      Policies:
+        - DynamoDBWritePolicy:
+            TableName: !Ref HealthChecksTable
+
+  HealthChecksTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: "Id"
+          KeyType: "HASH"
+        - AttributeName: "Timestamp"
+          KeyType: "RANGE"
+      AttributeDefinitions:
+        - AttributeName: "Id"
+          AttributeType: "S"
+        - AttributeName: "Timestamp"
+          AttributeType: "S"
+
+  
+# # expose properties of the created resources (e.g. the URL of an API Gateway)
+# Outputs:
+  
