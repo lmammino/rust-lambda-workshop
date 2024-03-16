@@ -730,11 +730,15 @@ sam validate --lint && sam build --beta-features && sam deploy
 
 **THE END!** 🎉
 
+> [!TIP]
+> If you want to remove all the infrastructure you created, you can run `sam delete` and it will remove the CloudFormation stack and all the resources it created.
+
+
 ## Ideas for further development of this example
 
 - Make the configuration options stack parameters for more reusability
 - Support multiple URLs (could do this concurrently from one lambda execution!)
-- Set a TTL to the dynamoDB records so you don’t have to retain them forever (e.g. keep the last 3 months of data)
+- Set a TTL to the DynamoDB records so you don’t have to retain them forever (e.g. keep the last 3 months of data)
 - Trigger an alarm if the check fails (bonus if your trigger some kind of notification when the site is back online)
 - Observability (logs, metrics, traces, etc)
 - It could take a snapshot of the content of the page and save it to S3
