@@ -1,11 +1,15 @@
 # Rust Lambda Workshop
 
+Material to host a workshop on how to build and deploy Rust Lambda functions with AWS SAM and Cargo Lambda.
+
+
 ## Intro
 
 - What is Serverless
 - What is Lambda
 - What is Rust
 - Why Lambda + Rust
+
 
 ## Prerequisites
 
@@ -50,6 +54,7 @@ sam --version
 # -> SAM CLI, version 1.111.0
 ```
 
+
 ## Scaffolding
 
 ```bash
@@ -58,6 +63,7 @@ cargo lambda new ping-it
 
 - Not an HTTP function
 - EventBridge Event (`eventbridge::EventBridgeEvent`)
+
 
 ## Code overview
 
@@ -93,6 +99,7 @@ Create example event in `events/eventbridge.json`:
 }
 ```
 
+
 ## Local testing
 
 ```bash
@@ -114,6 +121,7 @@ cargo lambda invoke --data-file events/eventbridge.json
     - AWS events with the `aws_lambda_events` crate (mention feature flags)
     - Mention you can have custom events
 
+
 ## Deployment with Cargo Lambda
 
 ```bash
@@ -134,6 +142,7 @@ cargo lambda deploy
         - the Lambda
         - a CloudWatch log stream (`/aws/lambda/<function-name>`) with retention set to Never Expire!
         - an IAM role (`cargo-lambda-role-*`)
+
 
 ## Using SAM
 
@@ -162,6 +171,7 @@ Transform: AWS::Serverless-2016-10-31
 
 - Every resources follows this structure:
 
+
 ```yaml
 ResourceName:
   Type: '<A specific reasource type>' # e.g. AWS::Serverless::Function
@@ -174,6 +184,7 @@ ResourceName:
 ```
 
 - Add definition for our Lambda:
+
 
 ```yaml
 Resources:
@@ -223,6 +234,7 @@ sam deploy --guided
 
 - Let’s change memory and timeout
 
+
 ```yaml
 Resources:
   
@@ -236,6 +248,7 @@ Resources:
 ```
 
 - To  redeploy (one liner)
+
 
 ```bash
 sam validate --lint && sam build --beta-features && sam deploy
@@ -252,7 +265,8 @@ sam validate --lint && sam build --beta-features && sam deploy
 
 ## Step 1. Making HTTP requests with reqwest
 
-```yaml
+
+```bash
 cargo add reqwest
 ```
 
@@ -276,27 +290,25 @@ async fn function_handler(event: LambdaEvent<EventBridgeEvent<Value>>) -> Result
 sam build --beta-features
 ```
 
-<aside>
-🔥 -- stderr
-thread 'main' panicked at /Users/luciano/.cargo/registry/src/index.crates.io-6f17d22bba15001f/openssl-sys-0.9.101/build/find_normal.rs:190:5:
-
-Could not find directory of OpenSSL installation, and this `-sys` crate cannot
-proceed without this knowledge. If OpenSSL is installed and this crate had
-trouble finding it,  you can set the `OPENSSL_DIR` environment variable for the
-compilation process.
-
-Make sure you also have the development packages of openssl installed.
-For example, `libssl-dev` on Ubuntu or `openssl-devel` on Fedora.
-
-If you're in a situation where you think the directory *should* be found
-automatically, please open a bug at [https://github.com/sfackler/rust-openssl](https://github.com/sfackler/rust-openssl)
-and include information about your system as well as this message.
-
-$HOST = aarch64-apple-darwin
-$TARGET = aarch64-unknown-linux-gnu
-openssl-sys = 0.9.101
-
-</aside>
+> [!CAUTION]
+> 🔥 -- stderr
+> thread 'main' panicked at /Users/luciano/.cargo/registry/src/index.crates.io-6f17d22bba15001f/openssl-sys-0.9.101/build/find_normal.rs:190:5:
+> 
+> Could not find directory of OpenSSL installation, and this `-sys` crate cannot
+> proceed without this knowledge. If OpenSSL is installed and this crate had
+> trouble finding it,  you can set the `OPENSSL_DIR` environment variable for the
+> compilation process.
+> 
+> Make sure you also have the development packages of openssl installed.
+> For example, `libssl-dev` on Ubuntu or `openssl-devel` on Fedora.
+> 
+> If you're in a situation where you think the directory *should* be found
+> automatically, please open a bug at [https://github.com/sfackler/rust-openssl](https://github.com/sfackler/rust-openssl)
+> and include information about your system as well as this message.
+> 
+> $HOST = aarch64-apple-darwin
+> $TARGET = aarch64-unknown-linux-gnu
+> openssl-sys = 0.9.101
 
 - **Reqwest**, by default tries to use the system OpenSSL library and when we cross-compile this can be problematic. A more reliable approach is to avoid to do that and use instead a Rust crate that implements TLS:
 
@@ -315,7 +327,7 @@ reqwest = { version = "0.11.26", default-features = false, features = [
 - Explain briefly what Rust crates feature flags are
 - let’s test locally with:
 
-```toml
+```bash
 cargo lambda watch # in a terminal
 cargo lambda invoke --data-file events/eventbridge.json # in another
 ```
@@ -358,19 +370,17 @@ async fn function_handler(_event: LambdaEvent<EventBridgeEvent<Value>>) -> Resul
 
 - For testing `https://httpstat.us/504?sleep=60000`
 
-<aside>
-🔥 `cargo lambda invoke --data-file events/eventbridge.json`
-
-```rust
-Error: alloc::boxed::Box<dyn core::error::Error + core::marker::Send + core::marker::Sync>
-
-× error sending request for url (https://httpstat.us/504?sleep=60000): operation timed out
-
-Was this error unexpected?
-Open an issue in https://github.com/cargo-lambda/cargo-lambda/issues
-```
-
-</aside>
+> [!CAUTION]
+> 🔥 `cargo lambda invoke --data-file events/eventbridge.json`
+> 
+> ```rust
+> Error: alloc::boxed::Box<dyn core::error::Error + core::marker::Send + core::marker::Sync>
+> 
+> × error sending request for url (https://httpstat.us/504?sleep=60000): operation timed out
+> 
+> Was this error unexpected?
+> Open an issue in https://github.com/cargo-lambda/cargo-lambda/issues
+> ```
 
 - Our entire execution is failing!
 - We rather want to capture the error and handle it gracefully
@@ -414,7 +424,7 @@ Resources:
     # ...
     Properties:
       # ...
-			Environment:
+      Environment:
         Variables:
           URL: 'https://loige.com'
           TIMEOUT: 10
@@ -447,7 +457,7 @@ async fn function_handler(
 
 ```rust
 let start = Instant::now();
-		// Here we use the client from config and we don't need to create one
+    // Here we use the client from config and we don't need to create one
     let resp = config.client.get(config.url.as_str()).send().await; 
     let duration = start.elapsed();
 
@@ -474,7 +484,7 @@ let start = Instant::now();
 async fn main() -> Result<(), Error> {
     tracing::init_default_subscriber();
 
-		// new code
+    // new code
     let url = env::var("URL").expect("URL environment variable is not set");
     let url = reqwest::Url::parse(&url).expect("URL environment variable is not a valid URL");
     let timeout = env::var("TIMEOUT").unwrap_or_else(|_| "60".to_string());
@@ -487,7 +497,7 @@ async fn main() -> Result<(), Error> {
     let config = &HandlerConfig { url, client };
     // end new code
 
-		// updated to pass the config in every invocation
+    // updated to pass the config in every invocation
     run(service_fn(move |event| async move {
         function_handler(config, event).await
     }))
@@ -558,7 +568,7 @@ Resources:
         Variables:
           # ...
           TABLE_NAME: !Ref HealthChecksTable # <- new
-			# ...
+    # ...
       Policies: # <- new
         - DynamoDBWritePolicy:
             TableName: !Ref HealthChecksTable
@@ -649,8 +659,8 @@ async fn function_handler(
     let resp = config.client.get(config.url.as_str()).send().await;
     let duration = start.elapsed();
 
-		// Added logic to get the current timestamp (either from the event or,
-		// if not provided, uses the current timestamp)
+    // Added logic to get the current timestamp (either from the event or,
+    // if not provided, uses the current timestamp)
     let timestamp = event
         .payload
         .time
@@ -667,10 +677,10 @@ async fn function_handler(
     );
     item.insert("Timestamp".to_string(), AttributeValue::S(timestamp));
 
-		// Updated our match statement to populate the record fields
-		// depending if the request failed or if it completed
-		// Note: we are now returning success: (always false for request failures, 
-		// while it depends on the status code for completed requests)
+    // Updated our match statement to populate the record fields
+    // depending if the request failed or if it completed
+    // Note: we are now returning success: (always false for request failures, 
+    // while it depends on the status code for completed requests)
     let success = match resp {
         Ok(resp) => {
             let status = resp.status().as_u16();
@@ -683,7 +693,7 @@ async fn function_handler(
             resp.status().is_success()
         }
         Err(e) => {
-		        // In case of failure we add the Error field
+            // In case of failure we add the Error field
             item.insert("Error".to_string(), AttributeValue::S(e.to_string()));
             false
         }
@@ -691,7 +701,7 @@ async fn function_handler(
     // Finally, we had the Success field
     item.insert("Success".to_string(), AttributeValue::Bool(success));
 
-		// Now we can send the request to DynamoDB
+    // Now we can send the request to DynamoDB
     let insert_result = config
         .dynamodb_client
         .put_item()
@@ -700,7 +710,7 @@ async fn function_handler(
         .send()
         .await?;
 
-		// And log the result
+    // And log the result
     tracing::info!("Insert result: {:?}", insert_result);
 
     Ok(())
@@ -714,8 +724,9 @@ sam validate --lint && sam build --beta-features && sam deploy
 ```
 
 - Note for testing: when testing with fake events, be aware you’ll need to change the timestamp in the event manually
+- Note about local testing. It is technically possible do it with a local dynamodb instance, but it’s not trivial and it’s not the focus of this workshop. In general, the more you start to use native AWS services (dynamodb, eventbridge, SQS, etc) the more you’ll need to rely on integration tests and less on local testing.
 
-**THE END!**
+**THE END!** 🎉
 
 ## Ideas for further development of this example
 
