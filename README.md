@@ -291,6 +291,7 @@ sam build --beta-features
 ```
 
 > [!CAUTION]
+> ```plain
 > 🔥 -- stderr
 > thread 'main' panicked at /Users/luciano/.cargo/registry/src/index.crates.io-6f17d22bba15001f/openssl-sys-0.9.101/build/find_normal.rs:190:5:
 > 
@@ -309,6 +310,7 @@ sam build --beta-features
 > $HOST = aarch64-apple-darwin
 > $TARGET = aarch64-unknown-linux-gnu
 > openssl-sys = 0.9.101
+> ```
 
 - **Reqwest**, by default tries to use the system OpenSSL library and when we cross-compile this can be problematic. A more reliable approach is to avoid to do that and use instead a Rust crate that implements TLS:
 
@@ -525,12 +527,12 @@ sam validate --lint && sam build --beta-features && sam deploy
 
 - Let’s create the table first
     - We will store data like this:
-        - Id: (”URL#Timestamp”) - String (hash key)
-        - Timestamp - String(sort key)
-        - StatusCode - Number
-        - Duration - Number
-        - Error - String
-        - Success - Boolean
+        - `Id`: (`"URL#Timestamp"`) - String (hash key)
+        - `Timestamp` - String(sort key)
+        - `Status` - Number
+        - `Duration` - Number
+        - `Error` - String
+        - `Success` - Boolean
 
 ```yaml
 Resources:
