@@ -328,6 +328,7 @@ sam build --beta-features
 # ...
 reqwest = { version = "0.11.26", default-features = false, features = [
   "rustls-tls",
+  "http2"
 ] }
 # ...
 ```
